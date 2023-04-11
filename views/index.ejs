@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="shitflix,shit flix,netflix">
+    <link rel="icon" type="image/png" href="../public/netflix-logo-1.png" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <title>Shitflix</title>
+
+    <style>
+        
+        body{
+            background:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),url('../public/netflix-background.jpg');height: 100vh;width: 100% ;
+           background-size: cover;
+           color: #fff;
+        }
+        select{
+            text-align: center;
+        }
+        img{
+            width: 200px;
+            margin-top: -10px;
+            padding-left: 10px;
+        }
+        input{
+            text-align: center;
+        }
+
+        .form-control:focus,.form-select:focus {
+            
+            border-color: rgba(255, 0, 0, 0.6);
+            box-shadow: inset 0 1px 1px rgba(158, 156, 156, 0.075), 0 0 8px rgba(255, 0, 0, 0.6);
+        }
+        
+        .hidden{
+            display: none;
+        }
+        .watching{
+            padding: 5px;
+        }
+        
+    </style>
+</head>
+<body id="body" >
+    <a href="/"><img src="../public/logo.png" alt=""></a>
+    <br><br><br>
+    <main class="form-group col-lg-6 offset-lg-1 px-3">
+        <h1>Shitflix</h1>
+        <br>
+        <form class="inputs">
+            <label for="show-type"><b>Show type</b></label>
+            <div class="selector  col-md-7">
+                <select class="form-select" name="select-type" id="show-type">
+                    <option hidden>shit</option>
+                    <option>Movie</option>
+                    <option>Series</option>
+                    <option>Anime</option>
+                </select>
+            </div>
+            <br>
+            <div class="name-div col-md-7 hidden">
+                <label for="name"><b>Name</b></label>
+                <input id="name" class="form-control" type="text" name="name" required placeholder="name">
+            </div>
+            <br>
+            <div class="d-flex px-3">
+                <div class="season-div col-md-3 mb-3 ps-3  hidden">
+                    <label for="season"><b>Season</b></label>
+                    <input id="season" class="form-control" type="number" value="0" placeholder="season" required min="0">
+                </div>
+                <div class="episode-div col-md-3 mb-3 ps-3 hidden">
+                    <label for="episode"><b>Episode</b></label>
+                    <input id="episode" class="form-control " type="number" value="0" placeholder="episode" required min="0">
+                </div>
+            </div>
+            <br>
+            <div id="submit-btn">
+                <button class="btn btn-danger btn-lg btn-block" type="submit">search</button>
+            </div>
+        </form>
+
+    </main>
+    <br>
+    <div class="servers form-group col-lg-7 offset-lg-5 d-flex"></div><br>
+    <div class="video" style="height: 100%;"></div>
+   <script>
+        const name = document.querySelector("#name");
+        const season = document.querySelector("#season");
+        const episode = document.querySelector("#episode");
+        const form = document.querySelector(".inputs");
+        const video = document.querySelector(".video");
+        const select = document.querySelector("#show-type");
+        const nameDiv = document.querySelector(".name-div");
+        const seasonDiv = document.querySelector(".season-div");
+        const episodeDiv = document.querySelector('.episode-div');
+        const servers = document.querySelector(".servers");
+        const watchingServers = document.querySelectorAll(".watching");
+
+
+        // select tag changes
+        select.addEventListener("change", onchangeType)
+        function onchangeType(){
+            if (select.value == "Movie"){
+                
+                nameDiv.classList.remove("hidden");
+                seasonDiv.classList.add("hidden");
+                episodeDiv.classList.add("hidden");
+                return;
+                
+            }
+            else if(select.value =="Series" || select.value == "Anime"){
+                nameDiv.classList.remove("hidden");
+                seasonDiv.classList.remove("hidden");
+                episodeDiv.classList.remove("hidden");
+                return
+            }
+        }
+
+
+        // sending a request
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            fetch(`http://localhost:7676/TV-shows/${name.value}/${season.value}/${episode.value}`)
+            .then(res => res.json())
+            .then(data => {
+                
+                //clear the servers in case were the user search for something and he research again(if we don't clear it the old resarch servers will stay)
+                servers.innerHTML = "";
+                console.log(data)
+                for(let i=0; i < data.length; i++){
+                    for(let key of Object.keys(data[i])){
+                        servers.innerHTML += `<div class="px-1"><button onclick="anotherServer(this.id)" class="watching btn btn-danger px-2" href="#" id="${data[i][key]}">${key}</button></div>`;
+                    }
+                }
+                console.log(Object.values(data[0]))
+
+                video.innerHTML = `<iframe src="${Object.values(data[0])}" allowfullscreen style="background:black;width:100%; height:100%; border-style:none;"></iframe>`;
+
+            });
+        });
+
+
+    
+        // watching other servers
+        function anotherServer(id) {
+            console.log(id)
+            video.innerHTML = `<iframe src="${id}" allowfullscreen style="background:black;width:100%; height:100%; border-style:none;"></iframe>`
+        }
+   </script>
+</body>
+</html>
